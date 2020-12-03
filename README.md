@@ -1,4 +1,4 @@
-# threetest.github.io
+# threetest
 
  A test to see if 3js works
 
