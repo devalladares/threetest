@@ -50,7 +50,7 @@
 			font-family: 'Cormorant Unicase', serif;
 
 			font-size: 30px;
-			line-height: 70px;
+			line-height: 25px;
 
 			cursor: pointer;
 		}
@@ -60,39 +60,45 @@
 <body>
 	<div id="blocker">
 		<div id="instructions">
-			<span style="font-size:144px"> <a> ◎ <br /> Enter</a> </span>
+			<span style="font-size:144px" ;> <a> ◎ <br /> <br /> Enter</a> </span>
 			<br />
-			&nbsp;&nbsp; Move &nbsp; ← → ↑ ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ◘ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Look &nbsp;&nbsp; ⭤ Mouse⭥ &nbsp;&nbsp;
+			<br />
+			<br />
+			Keys &nbsp; ← → ↑ ↓
+			<br /> <br />
+
+			Mouse &nbsp;&nbsp; ⭤⭥ &nbsp;&nbsp;
 		</div>
 	</div>
 	<div id="container"></div>
 
+
 	<script type="module">
-		import * as THREE from './build/three.module.js';
+		import * as THREE from '../build/three.module.js';
 		import Stats from './examples/jsm/libs/stats.module.js';
 		import {
 			PointerLockControls
 		} from './examples/jsm/controls/PointerLockControls.js';
 		import {
 			GUI
-		} from './examples/jsm/libs/dat.gui.module.js';
+		} from '../examples/jsm/libs/dat.gui.module.js';
 
-/*
-
-
-
-
-THREEJS BEGIN
+		/*
 
 
 
 
+		THREEJS BEGIN
 
-*/
+
+
+
+
+		*/
 
 
 		let camera, scene, renderer, controls;
-		let geometry, materialOptions, starStuff, stars, stats, container
+		let geometry, materialOptions, starStuff, stars, stats, container, starGroup
 		let light
 		let clock = new THREE.Clock();
 
@@ -112,13 +118,13 @@ THREEJS BEGIN
 		const vertex = new THREE.Vector3();
 
 
-		// // PRESENTATION
-		const speederBoi = 200
-		const starQtyNum = 1000
+		// PRESENTATION
+		const speederBoi = 100
+		const starQtyNum = 50000
 
-		// WORKING
+		// // WORKING
 		// const speederBoi = 800
-		// const starQtyNum = 100
+		// const starQtyNum = 50000
 
 		function init() {
 
@@ -129,8 +135,9 @@ THREEJS BEGIN
 			scene = new THREE.Scene()
 			scene.background = new THREE.Color('black');
 			// scene.background = new THREE.Color('lightgrey');
+			// scene.background = new THREE.Color('black');
+			scene.fog = new THREE.Fog('lightgrey', 0, 400);
 
-			// scene.fog = new THREE.Fog('lightgrey', 0, 200);
 
 			starForge()
 
@@ -144,16 +151,23 @@ THREEJS BEGIN
 				starStuff = new THREE.PointsMaterial(materialOptions);
 				for (let i = 0; i < starQty; i++) {
 
+					const x = 1000
+					const y = 2000
+					const z = 2500
+
 					let starVertex = new THREE.Vector3();
-					starVertex.x = Math.random() * 2000 - 1000;
-					starVertex.y = Math.random() * 2000 - 1000;
-					starVertex.z = Math.random() * 2000 - 1000;
+					starVertex.x = Math.random() * 2000 - x / 2;
+					starVertex.y = Math.random() * 2000 - y / 2;
+					starVertex.z = Math.random() * 2000 - z / 2;
 
 					geometry.vertices.push(starVertex);
 
 				}
 				stars = new THREE.Points(geometry, starStuff);
-				scene.add(stars);
+				starGroup = new THREE.Object3D();
+
+				starGroup.add(stars)
+				scene.add(starGroup);
 			}
 
 			controls = new PointerLockControls(camera, document.body);
@@ -234,20 +248,19 @@ THREEJS BEGIN
 
 			light = new THREE.PointLight('white', 10, 100);
 			light.castShadow = true;
-
+			// light.intensity = 10
+			// light.decay = 100
+			// light.distance = 100
 
 			const geometry2 = new THREE.SphereGeometry(0.5, 4, 4);
 			const material2 = new THREE.MeshBasicMaterial({
 				color: 'white'
 			});
 
-
-
 			light.position.copy(controls.getObject().position)
 			camera.add(light);
 
-			var pointColor = "#ff5808";
-
+			let pointColor = "#ff5808";
 
 			let plane = getPlane(1000);
 
@@ -257,12 +270,19 @@ THREEJS BEGIN
 			plane.name = 'plane-1';
 			plane.rotation.x = Math.PI / 2;
 			plane.position.y = -30;
+			plane.position.z = -200;
+
 
 			scene.add(plane);
 
 			camera.position.x = 0;
 			camera.position.y = 0;
-			camera.position.z = 100;
+			camera.position.z = 150;
+
+			let spotLight0 = new THREE.SpotLight(0xcccccc);
+			spotLight0.position.set(-0, 100, -10);
+			spotLight0.intensity = 20
+			scene.add(spotLight0);
 
 			//////////////////////////////////////////////////////////////////////////
 
@@ -281,39 +301,156 @@ THREEJS BEGIN
 			stats = new Stats();
 			container.appendChild(stats.dom);
 
-			// scene.add(new THREE.GridHelper(200, 10));
+			setRing1(-75)
+			setRing2(-50)
+			setRing3(-25)
+			setRing4(0)
+			setRing5(25)
 
-			for (let i = 0; i < 20; i++) {
-				setRing1()
-			}
+
+const audioListener = new THREE.AudioListener();
+camera.add(audioListener);
+const oceanAmbientSound = new THREE.Audio(audioListener);
+scene.add(oceanAmbientSound);
+const loader = new THREE.AudioLoader();
+
+loader.load(
+'audio/devmusic.mp3',
+function(audioBuffer) {
+oceanAmbientSound.setBuffer(audioBuffer);
+oceanAmbientSound.play();
+},
+
+function(xhr) {
+console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+},
+function(err) {
+console.log('An error happened');
+}
+);
+
 		}
 
-		let ring1 = [];
-		let time = 0;
-		let radius = 50;
+		///////////////////////////////////////////////////////////////////////////
+		///////////////////////// GLOBAL VARIABLES ////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////
 
-		function setRing1() {
+		let time = 0;
+		let ringRadius = 50;
+		let ringGroup1, ringGroup2, ringGroup6, ringGroup3, ringGroup4, ringGroup5
+		let ringCount = 30
+
+		///////////////////////////////////////////////////////////////////////////
+		///////////////////////// FUNCTIONS ////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////
+
+		function setRing1(z) {
 
 			const geometry = new THREE.SphereGeometry(4, 32, 32)
 			const material = new THREE.MeshPhongMaterial({
 				color: 'grey'
 			})
 
-			let c = new THREE.Mesh(geometry, material)
-			c.receiveShadow = true;
+			ringGroup1 = new THREE.Object3D();
 
-			scene.add(c);
-			ring1.push(c);
+			for (let i = 0; i < ringCount; i++) {
+				const mesh = new THREE.Mesh(geometry, material)
+				const t = i / ringCount * 2 * Math.PI
+				mesh.position.x = Math.cos(t) * ringRadius;
+				mesh.position.y = Math.sin(t) * ringRadius;
+				ringGroup1.position.set(0, 0, z)
 
-
-
-			var spotLight0 = new THREE.SpotLight(0xcccccc);
-			spotLight0.position.set(-0, 60, -10);
-			scene.add(spotLight0);
-
+				ringGroup1.add(mesh)
+				scene.add(ringGroup1)
+			}
 		}
 
-		///////////////////////////////////////////////////////////////////////////
+		function setRing2(z) {
+
+			const geometry = new THREE.SphereGeometry(4, 32, 32)
+			const material = new THREE.MeshPhongMaterial({
+				color: 'grey'
+			})
+
+			ringGroup2 = new THREE.Object3D();
+
+			for (let i = 0; i < ringCount; i++) {
+				const mesh = new THREE.Mesh(geometry, material)
+				const t = i / ringCount * 2 * Math.PI
+				mesh.position.x = Math.cos(t) * ringRadius;
+				mesh.position.y = Math.sin(t) * ringRadius;
+				ringGroup2.position.set(0, 0, z)
+
+				ringGroup2.add(mesh)
+				scene.add(ringGroup2)
+			}
+		}
+
+		function setRing3(z) {
+
+			const geometry = new THREE.SphereGeometry(4, 32, 32)
+			const material = new THREE.MeshPhongMaterial({
+				color: 'grey'
+			})
+
+			ringGroup3 = new THREE.Object3D();
+
+			for (let i = 0; i < ringCount; i++) {
+				const mesh = new THREE.Mesh(geometry, material)
+				const t = i / ringCount * 2 * Math.PI
+				mesh.position.x = Math.cos(t) * ringRadius;
+				mesh.position.y = Math.sin(t) * ringRadius;
+				ringGroup3.position.set(0, 0, z)
+
+				ringGroup3.add(mesh)
+				scene.add(ringGroup3)
+			}
+		}
+
+		function setRing4(z) {
+
+			const geometry = new THREE.SphereGeometry(4, 32, 32)
+			const material = new THREE.MeshPhongMaterial({
+				color: 'grey'
+			})
+
+			ringGroup4 = new THREE.Object3D();
+
+			for (let i = 0; i < ringCount; i++) {
+				const mesh = new THREE.Mesh(geometry, material)
+				const t = i / ringCount * 2 * Math.PI
+				mesh.position.x = Math.cos(t) * ringRadius;
+				mesh.position.y = Math.sin(t) * ringRadius;
+				ringGroup4.position.set(0, 0, z)
+
+				ringGroup4.add(mesh)
+				scene.add(ringGroup4)
+			}
+		}
+
+		function setRing5(z) {
+
+			const geometry = new THREE.SphereGeometry(4, 32, 32)
+			const material = new THREE.MeshPhongMaterial({
+				color: 'grey'
+			})
+
+			ringGroup5 = new THREE.Object3D();
+
+			for (let i = 0; i < ringCount; i++) {
+				const mesh = new THREE.Mesh(geometry, material)
+				const t = i / ringCount * 2 * Math.PI
+				mesh.position.x = Math.cos(t) * ringRadius;
+				mesh.position.y = Math.sin(t) * ringRadius;
+				ringGroup5.position.set(0, 0, z)
+
+				ringGroup5.add(mesh)
+				scene.add(ringGroup5)
+			}
+		}
+
+
+
 
 		function getPlane(size) {
 			const geometry = new THREE.PlaneGeometry(50, size);
@@ -325,9 +462,10 @@ THREEJS BEGIN
 				geometry,
 				material
 			);
-			mesh.receiveShadow = true;
+			// mesh.receiveShadow = true;
 			return mesh;
 		}
+
 
 		function onWindowResize() {
 			camera.aspect = window.innerWidth / window.innerHeight;
@@ -341,8 +479,13 @@ THREEJS BEGIN
 			render()
 		}
 
+		///////////////////////////////////////////////////////////////////////////
+		///////////////////////// RENDER ////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////
+
 		function render() {
 			const performanceNow = performance.now();
+			// console.log(camera.position)
 
 			if (controls.isLocked === true) {
 				raycaster.ray.origin.copy(controls.getObject().position);
@@ -352,33 +495,23 @@ THREEJS BEGIN
 				const delta = (performanceNow - prevTime) / 1000;
 				velocity.x -= velocity.x * 10.0 * delta;
 				velocity.z -= velocity.z * 10.0 * delta;
-				velocity.y -= 9.8 * 2.0 * delta; // 100.0 = mass
 				direction.z = Number(moveForward) - Number(moveBackward);
 				direction.x = Number(moveRight) - Number(moveLeft);
 				direction.normalize(); // this ensures consistent movements in all directions
 				if (moveForward || moveBackward) velocity.z -= direction.z * speederBoi * delta;
 				if (moveLeft || moveRight) velocity.x -= direction.x * speederBoi * delta;
-				if (onObject === true) {
-					velocity.y = Math.max(0, velocity.y);
-					canJump = true;
-				}
 				controls.moveRight(-velocity.x * delta);
 				controls.moveForward(-velocity.z * delta);
 				controls.getObject().position.y += (velocity.y * delta); // new behavior
-
 				if (controls.getObject().position.y < 0) {
 					velocity.y = 0;
 					controls.getObject().position.y = 0;
-					canJump = false;
 				}
 			}
 
-			for (let i = 0; i < scene.children.length; i++) {
-
-				const object = scene.children[i];
-				if (object instanceof THREE.Points) {
-					object.rotation.y = performanceNow * (i < 1 ? i - 0.000015 : -(i + 1));
-				}
+			for (let i = 0; i < starGroup.children.length; i++) {
+				const object = starGroup.children[i];
+				object.rotation.y = performanceNow * (i < 1 ? i - 0.000015 : -(i + 1));
 			}
 
 			prevTime = performanceNow;
@@ -386,13 +519,17 @@ THREEJS BEGIN
 			light.position.set(0, 0, 0);
 
 			time = clock.getElapsedTime() * 0.03 * Math.PI;
-			ring1.forEach((c, ndx) => {
-				c.position.set(
-					Math.cos(time + Math.PI * 0.1 * ndx) * radius,
-					Math.sin(time + Math.PI * 0.1 * ndx) * radius,
-					0
-				)
-			})
+
+
+
+			ringGroup1.rotation.z += 0.0015
+			ringGroup2.rotation.z += 0.0013
+			ringGroup3.rotation.z += 0.0011
+			ringGroup4.rotation.z += 0.0009
+			ringGroup5.rotation.z += 0.0007
+
+
+
 
 			renderer.render(scene, camera);
 		}
