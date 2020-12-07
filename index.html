@@ -360,7 +360,7 @@
 			/////////////////////////////// PLANE + LIGHT + RING ///////////////////////////////////
 
 			const planeGeometry = new THREE.PlaneGeometry(50, 2000);
-			const planeMaterialBlack = new THREE.MeshStandardMaterial({
+			const planeMaterialBlack = new THREE.MeshBasicMaterial({
 				color: 'black',
 				side: THREE.DoubleSide
 			});
@@ -376,7 +376,7 @@
 
 			let spotLight0 = new THREE.SpotLight(0xcccccc);
 			spotLight0.position.set(-0, 200, -10);
-			spotLight0.intensity = 20
+			spotLight0.intensity = 100
 			scene.add(spotLight0);
 			spotLight0.lookAt(camera.position)
 
