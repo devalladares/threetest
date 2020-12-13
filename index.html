@@ -456,6 +456,15 @@
 			/////////////////////////////// GARDEN ///////////////////////////////////
 
 			gardenBox()
+			
+						const geometry2 = new THREE.SphereBufferGeometry(30, 10, 10);
+			const material2 = new THREE.MeshBasicMaterial({
+				color: 'white'
+			});
+		 bodySphere = new THREE.Mesh(geometry2, material2);
+
+			bodySphere.position.copy(controls.getObject().position)
+		camera.add(bodySphere);
 
 
 			/////////////////////////////// GLTF ///////////////////////////////////
@@ -1140,7 +1149,7 @@
 			}
 
 			prevTime = performanceNow;
-			// bodySphere.position.set(0, -10, 0);
+			bodySphere.position.set(0, 0, 0);
 
 			const scale = (num, in_min, in_max, out_min, out_max) => {
 				return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
